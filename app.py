@@ -85,11 +85,20 @@ if st.button("Predict Churn Status", use_container_width=True):
 
 # --- MAIN SCREEN: FEATURE IMPORTANCE PLOT ---
 st.subheader("📊 Model Feature Importance")
-st.write("This plot shows which features your Decision Tree model used the most (Highest to Lowest impact).")
+st.write("This plot shows the relative importance score of the specific features you adjusted above.")
 
-# Calculate importances
+# Exact list of the 5 input features you used
+input_features = [
+    'Customer Satisfaction Score (1-10)',
+    'Engagement Rate (1-10)',
+    'Daily Watch Time (Hours)',
+    'Subscription Length (Months)',
+    'Support Queries Logged'
+]
+
+# Calculate importances and filter ONLY for your input features
 importances = dt_model.feature_importances_
-feat_importances = pd.Series(importances, index=X.columns).sort_values(ascending=False).head(7)
+feat_importances = pd.Series(importances, index=X.columns)[input_features].sort_values(ascending=False)
 
 # Plotting
 fig, ax = plt.subplots(figsize=(7, 4))
