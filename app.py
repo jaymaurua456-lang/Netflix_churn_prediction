@@ -8,7 +8,7 @@ from sklearn.tree import DecisionTreeClassifier
 st.set_page_config(page_title="Netflix Churn Predictor", layout="centered")
 
 st.title("🎬 Netflix Customer Churn Prediction App")
-st.write("Enter the customer details manually using the inputs on the left. These are the top features your Colab model uses to predict churn.")
+st.write("Enter the customer details manually using the inputs on the left. These features drive the Decision Tree model predictions.")
 
 # --- STEP 1: BACKGROUND DATA LOAD ---
 @st.cache_data
@@ -45,29 +45,35 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 dt_model = DecisionTreeClassifier(max_depth=5, random_state=42)
 dt_model.fit(X_train, Y_train)
 
-# --- STEP 4: SIDEBAR INPUT FIELDS (Actual Top Impact Features Fix) ---
+# --- STEP 4: SIDEBAR INPUT FIELDS (With 2 New Powerful Features) ---
 st.sidebar.header("📊 Top Model Features")
 st.sidebar.write("Change these to see different prediction results:")
 
-# Replacing 0% importance features with your Colab model's highest-ranking features
+# Main features control panel
 income = st.sidebar.number_input("Monthly Income ($)", min_value=500, max_value=15000, value=5000, step=500)
 age = st.sidebar.slider("Age", 18, 70, 35)
 watch_time = st.sidebar.slider("Daily Watch Time (Hours)", 0.5, 5.0, 2.5)
+sub_length = st.sidebar.slider("Subscription Length (Months)", 1, 24, 12)
 support_queries = st.sidebar.slider("Support Queries Logged", 0, 10, 3)
-profiles = st.sidebar.slider("Number of Profiles Created", 1, 5, 2)
 
-# Background fill for remaining less important columns
+# --- NEW ADDED COLUMNS ---
+sat_score = st.sidebar.slider("Customer Satisfaction Score (1-10)", 1, 10, 5)
+engagement = st.sidebar.slider("Engagement Rate (1-10)", 1, 10, 5)
+
+# Background fill for remaining columns to maintain shape structure
 input_data = {col: X[col].median() for col in X.columns}
 
 # Overwriting with your actual dynamic high-importance inputs
 input_data['Monthly Income ($)'] = income
 input_data['Age'] = age
 input_data['Daily Watch Time (Hours)'] = watch_time
+input_data['Subscription Length (Months)'] = sub_length
 input_data['Support Queries Logged'] = support_queries
-input_data['Number of Profiles Created'] = profiles
+input_data['Customer Satisfaction Score (1-10)'] = sat_score
+input_data['Engagement Rate (1-10)'] = engagement
 
 input_df = pd.DataFrame([input_data])
-input_df = input_df[X.columns]  # Keep identical column order
+input_df = input_df[X.columns]  # Keep identical column order as training data
 
 # --- STEP 5: MAIN SCREEN PREDICTION ---
 st.subheader("🎯 Make a Prediction")
