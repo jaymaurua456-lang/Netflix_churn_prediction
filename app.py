@@ -8,12 +8,11 @@ from sklearn.tree import DecisionTreeClassifier
 st.set_page_config(page_title="Netflix Churn Predictor", layout="centered")
 
 st.title("🎬 Netflix Customer Churn Prediction App")
-st.write("Enter the customer details manually using the sliders on the left to predict the churn status.")
+st.write("Enter the customer details manually using the inputs on the left. These are the top features your Colab model uses to predict churn.")
 
-# --- STEP 1: BACKGROUND DATA LOAD (Exactly like your Colab) ---
+# --- STEP 1: BACKGROUND DATA LOAD ---
 @st.cache_data
 def load_data():
-    # Make sure 'netflix_large_user_data.xlsx' is in your VS Code folder
     df = pd.read_excel("netflix_large_user_data.xlsx")
     return df
 
@@ -34,7 +33,6 @@ categorical_cols = [
     'Subscription Plan'
 ]
 
-# One-Hot Encoding (drop_first=True) exactly like your notebook
 df_processed = pd.get_dummies(df_model, columns=categorical_cols, drop_first=True)
 if 'Customer ID' in df_processed.columns:
     df_processed = df_processed.drop('Customer ID', axis=1)
@@ -47,32 +45,33 @@ X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_
 dt_model = DecisionTreeClassifier(max_depth=5, random_state=42)
 dt_model.fit(X_train, Y_train)
 
-# --- STEP 4: SIDEBAR INPUT SLIDERS ---
-st.sidebar.header("📊 Top Important Features")
-st.sidebar.write("Adjust the values below:")
+# --- STEP 4: SIDEBAR INPUT FIELDS (Actual Top Impact Features Fix) ---
+st.sidebar.header("📊 Top Model Features")
+st.sidebar.write("Change these to see different prediction results:")
 
-# Top 5 features used for input
-sat_score = st.sidebar.slider("Customer Satisfaction Score (1-10)", 1, 10, 5)
-engagement = st.sidebar.slider("Engagement Rate (1-10)", 1, 10, 5)
+# Replacing 0% importance features with your Colab model's highest-ranking features
+income = st.sidebar.number_input("Monthly Income ($)", min_value=500, max_value=15000, value=5000, step=500)
+age = st.sidebar.slider("Age", 18, 70, 35)
 watch_time = st.sidebar.slider("Daily Watch Time (Hours)", 0.5, 5.0, 2.5)
-sub_length = st.sidebar.slider("Subscription Length (Months)", 1, 24, 12)
 support_queries = st.sidebar.slider("Support Queries Logged", 0, 10, 3)
+profiles = st.sidebar.slider("Number of Profiles Created", 1, 5, 2)
 
-# Process only these inputs, fill the rest with median values to keep it stable
+# Background fill for remaining less important columns
 input_data = {col: X[col].median() for col in X.columns}
 
-input_data['Customer Satisfaction Score (1-10)'] = sat_score
-input_data['Engagement Rate (1-10)'] = engagement
+# Overwriting with your actual dynamic high-importance inputs
+input_data['Monthly Income ($)'] = income
+input_data['Age'] = age
 input_data['Daily Watch Time (Hours)'] = watch_time
-input_data['Subscription Length (Months)'] = sub_length
 input_data['Support Queries Logged'] = support_queries
+input_data['Number of Profiles Created'] = profiles
 
 input_df = pd.DataFrame([input_data])
-input_df = input_df[X.columns]  # Keep identical column order as training data
+input_df = input_df[X.columns]  # Keep identical column order
 
 # --- STEP 5: MAIN SCREEN PREDICTION ---
 st.subheader("🎯 Make a Prediction")
-st.write("Click the button below to process the data entered in the sidebar.")
+st.write("Adjust the values in the sidebar and click the button below to see how prediction shifts.")
 
 if st.button("Predict Churn Status", use_container_width=True):
     prediction = dt_model.predict(input_df)
